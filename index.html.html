@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Framework — Mini Ecossistema de Conteúdo v3</title>
+  <style>
+    :root{
+      --bg:#f4eadb; --panel:#fffaf2; --panel2:#fff6e8; --text:#1d2939; --muted:#667085;
+      --line:#ddcdb8; --cyan:#0f766e; --purple:#7c3aed; --orange:#c2410c; --green:#15803d;
+      --red:#be123c; --ink:#172033;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:radial-gradient(circle at top right, rgba(124,58,237,.10), transparent 34%),
+                 radial-gradient(circle at top left, rgba(15,118,110,.12), transparent 34%),
+                 linear-gradient(135deg, #f4eadb 0%, #fffaf2 48%, #efe0c9 100%);
+      color:var(--text);
+    }
+    .wrap{ max-width:1180px; margin:0 auto; padding:28px 18px 50px; }
+    header{ display:flex; justify-content:space-between; gap:18px; align-items:flex-start; margin-bottom:18px; }
+    h1{ margin:0; font-size:32px; letter-spacing:-.6px; line-height:1.05; }
+    .title-block p{ margin:8px 0 0; color:var(--muted); font-size:14px; max-width:760px; }
+    .badge{ display:inline-block; background:var(--cyan); color:#ffffff; font-weight:800; border-radius:999px; padding:7px 12px; font-size:12px; margin-bottom:10px; letter-spacing:.3px; }
+    .actions{ display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; min-width:300px; }
+    button, label.import-btn{
+      border:1px solid rgba(120,92,56,.20); background:rgba(255,255,255,.62); color:var(--text);
+      padding:10px 12px; border-radius:12px; cursor:pointer; font-weight:700; font-size:12px; transition:.15s;
+    }
+    button:hover, label.import-btn:hover{ transform:translateY(-1px); background:rgba(255,255,255,.90); }
+    .primary{ background:var(--cyan); color:#fff; border-color:var(--cyan); }
+    .danger{ background:rgba(255,93,123,.14); border-color:rgba(255,93,123,.45); }
+    input[type=file]{ display:none; }
+
+    .meta{ display:grid; grid-template-columns:2fr 1fr; gap:12px; margin-bottom:16px; }
+    .card{
+      background:rgba(255,250,242,.96); border:1px solid rgba(120,92,56,.18); border-radius:18px;
+      box-shadow:0 18px 50px rgba(92,64,36,.12); overflow:hidden;
+    }
+    .card-head{ padding:12px 14px; font-weight:900; letter-spacing:.2px; display:flex; align-items:center; gap:8px; border-bottom:1px solid rgba(120,92,56,.16); }
+    .dot{ width:12px; height:12px; border-radius:50%; display:inline-block; background:var(--cyan); flex:0 0 auto; }
+    .card-body{ padding:14px; }
+    .grid{ display:grid; gap:14px; }
+    .grid.two{ grid-template-columns:1fr 1fr; }
+    .grid.three{ grid-template-columns:repeat(3,1fr); }
+    label.field-title{ display:block; color:var(--muted); font-weight:800; font-size:12px; margin-bottom:6px; text-transform:uppercase; letter-spacing:.35px; }
+    input, textarea, select{
+      width:100%; border:1px solid rgba(120,92,56,.22); background:#fffdf8; color:#1d2939;
+      border-radius:12px; padding:10px 11px; outline:none; font-size:14px; font-family:inherit;
+    }
+    textarea{
+      min-height:140px;
+      resize:vertical;
+      line-height:1.36;
+      overflow:hidden;
+      white-space:pre-wrap;
+    }
+    textarea.names{ min-height:88px; }
+    textarea.long{ min-height:260px; }
+    textarea.medium{ min-height:190px; }
+    textarea.short{ min-height:90px; }
+    input:focus, textarea:focus, select:focus{ border-color:var(--cyan); box-shadow:0 0 0 3px rgba(34,211,238,.12); }
+    .section{ margin-top:16px; }
+    .hint{ color:var(--muted); font-size:12px; line-height:1.35; margin-top:8px; }
+    .pill{ display:inline-block; font-size:11px; color:#07111e; background:var(--cyan); border-radius:999px; padding:4px 8px; font-weight:900; margin-left:auto; }
+    .mini{ font-size:12px; color:var(--muted); line-height:1.35; }
+    .footer-note{ margin-top:20px; color:var(--muted); font-size:12px; text-align:center; }
+    .print-tip{ margin-top:8px; color:#d7f8ff; font-size:12px; }
+
+    .checklist{
+      display:grid;
+      gap:10px;
+      margin-top:4px;
+    }
+    .check-item{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:10px 12px;
+      background:#0c1426;
+      border:1px solid rgba(120,92,56,.22);
+      border-radius:12px;
+      line-height:1.35;
+    }
+    .check-item input{
+      width:18px;
+      height:18px;
+      margin-top:1px;
+      accent-color:#22d3ee;
+      flex:0 0 auto;
+    }
+    .check-item span{
+      color:var(--text);
+      font-size:14px;
+    }
+
+    @media (max-width:850px){
+      header{flex-direction:column}.actions{justify-content:flex-start}.meta,.grid.two,.grid.three{grid-template-columns:1fr}h1{font-size:26px}
+    }
+
+    @media print{
+      @page{ size:A4; margin:12mm; }
+      body{ background:white!important; color:var(--ink); }
+      .wrap{ max-width:none; padding:0; }
+      .actions,.screen-hint,.print-tip{ display:none!important; }
+      header{ margin:0 0 8px; padding-bottom:8px; border-bottom:2px solid #d6deeb; }
+      .badge{ background:#e6fbff!important; color:#0a3d47!important; border:1px solid #9cecf8; }
+      h1{ color:#101827; font-size:22px; }
+      .title-block p{ color:#4a5875; font-size:10px; }
+      .card{
+        background:white!important; color:#172033; border:1.5px solid #d6deeb; box-shadow:none;
+        border-radius:10px; break-inside:avoid; page-break-inside:avoid;
+      }
+      .card-head{ color:#172033; border-bottom:1px solid #d6deeb; padding:7px 9px; font-size:13px; }
+      .card-body{ padding:8px; }
+      .section{ margin-top:8px; }
+      label.field-title{ color:#39465f; font-size:9px; margin-bottom:3px; }
+      input, textarea, select{
+        background:white!important; color:#172033; border:1px solid #cbd5e5; border-radius:7px;
+        padding:5px 6px; font-size:10px;
+      }
+      textarea{
+        min-height:120px;
+        overflow:visible!important;
+        white-space:pre-wrap;
+      }
+      textarea.names{ min-height:90px; }
+      textarea.long{ min-height:230px; }
+      textarea.medium{ min-height:170px; }
+      textarea.short{ min-height:58px; }
+      .grid{ gap:7px; }
+      .grid.two{ grid-template-columns:1fr; }
+      .grid.three{ grid-template-columns:1fr; }
+      .meta{ grid-template-columns:2fr 1fr; gap:7px; }
+      .hint,.mini,.footer-note{ color:#52617c; font-size:9px; margin-top:4px; }
+      .page-break{ break-before:page; }
+
+      .check-item{
+        background:white!important;
+        border:1px solid #cbd5e5;
+        border-radius:7px;
+        padding:6px 8px;
+      }
+      .check-item span{ color:#172033; font-size:10px; }
+      .check-item input{
+        width:14px;
+        height:14px;
+        print-color-adjust:exact;
+        -webkit-print-color-adjust:exact;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title-block">
+        <span class="badge">ATIVIDADE • MINI ECOSSISTEMA DE CONTEÚDO</span>
+        <h1>Framework de Criação de Conteúdo, Copy e Campanha Conectada</h1>
+        <p class="print-tip"><strong>Dica:</strong> antes de salvar em PDF, clique em “Preparar impressão/PDF”. Isso expande os campos para mostrar todo o conteúdo.</p>
+      </div>
+      <div class="actions">
+        <button class="primary" onclick="preparePrint()">Preparar impressão/PDF</button>
+        <button onclick="saveData()">Salvar no navegador</button>
+        <button onclick="preparePrint(); setTimeout(()=>window.print(),150)">Imprimir / PDF</button>
+        <button class="danger" onclick="clearData()">Limpar</button>
+      </div>
+    </header>
+
+    <p class="hint screen-hint"><strong>Autosave:</strong> as respostas ficam salvas neste navegador. Para entregar, use “Imprimir / PDF” após clicar em “Preparar impressão/PDF”.</p>
+
+    <section class="meta">
+      <div>
+        <label class="field-title" for="integrantes">Integrantes</label>
+        <textarea id="integrantes" data-save class="names" placeholder="Coloque um nome por linha.&#10;Ex.:&#10;Fulana de Tal&#10;Beltrana de Tal&#10;Siclana de Tal"></textarea>
+      </div>
+      <div>
+        <label class="field-title" for="data">Data</label>
+        <input id="data" data-save placeholder="13/05/2026" />
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="card-head"><span class="dot"></span>1. Contexto estratégico da campanha <span class="pill">antes de criar</span></div>
+      <div class="card-body grid three">
+        <div><label class="field-title" for="negocio">Negócio escolhido</label><textarea id="negocio" data-save class="short" placeholder="Ex.: loja de óculos, academia, cafeteria..."></textarea></div>
+        <div><label class="field-title" for="publico">Público-alvo</label><textarea id="publico" data-save class="short" placeholder="Quem a campanha quer atingir?"></textarea></div>
+        <div><label class="field-title" for="objetivo">Objetivo da campanha</label><textarea id="objetivo" data-save class="short" placeholder="Gerar leads, agendar, vender, baixar material..."></textarea></div>
+        <div>
+          <label class="field-title" for="consciencia">Nível dominante de consciência</label>
+          <select id="consciencia" data-save>
+            <option value="">Selecione</option>
+            <option>Completamente inconsciente</option>
+            <option>Consciente do problema</option>
+            <option>Consciente da solução</option>
+            <option>Consciente do produto/marca</option>
+            <option>Muito consciente</option>
+          </select>
+          <p class="mini">Escolha o nível principal da campanha. Não precisa cobrir todos.</p>
+        </div>
+        <div><label class="field-title" for="tema">Tema central / promessa</label><textarea id="tema" data-save class="short" placeholder="Qual ideia une todas as peças?"></textarea></div>
+        <div><label class="field-title" for="cta_geral">CTA principal</label><textarea id="cta_geral" data-save class="short" placeholder="Qual ação final a campanha quer provocar?"></textarea></div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <div class="card-head"><span class="dot" style="background:var(--orange)"></span>2. Roteiro de Reels <span class="pill" style="background:var(--orange)">capturar atenção</span></div>
+      <div class="card-body grid two">
+        <div><label class="field-title" for="reels_gancho">Gancho inicial</label><textarea id="reels_gancho" data-save class="medium" placeholder="Primeiros 3 segundos. O que faz parar?"></textarea></div>
+        <div><label class="field-title" for="reels_cta">CTA do Reels</label><textarea id="reels_cta" data-save class="medium" placeholder="Salvar, comentar, clicar, mandar direct..."></textarea></div>
+        <div style="grid-column:1/-1"><label class="field-title" for="reels_desenvolvimento">Desenvolvimento do Reels</label><textarea id="reels_desenvolvimento" data-save class="long" placeholder="Descreva o roteiro, a sequência das falas/cenas, a lógica visual e o fechamento."></textarea></div>
+      </div>
+    </section>
+
+    <section class="card section page-break">
+      <div class="card-head"><span class="dot" style="background:var(--purple)"></span>3. Página, artigo curto ou landing page <span class="pill" style="background:var(--purple); color:#fff">aprofundar</span></div>
+      <div class="card-body grid two">
+        <div><label class="field-title" for="pagina_titulo">Título</label><textarea id="pagina_titulo" data-save class="short" placeholder="Título claro e conectado à promessa"></textarea></div>
+        <div><label class="field-title" for="pagina_cta">CTA da página</label><textarea id="pagina_cta" data-save class="short" placeholder="O que a pessoa faz depois de ler?"></textarea></div>
+        <div><label class="field-title" for="pagina_abertura">Abertura</label><textarea id="pagina_abertura" data-save class="long" placeholder="Como o texto começa? Qual dor, desejo ou contexto ativa?"></textarea></div>
+        <div><label class="field-title" for="pagina_desenvolvimento">Desenvolvimento resumido</label><textarea id="pagina_desenvolvimento" data-save class="long" placeholder="Principais argumentos, tópicos ou blocos da página"></textarea></div>
+      </div>
+    </section>
+
+    <section class="card section page-break">
+      <div class="card-head"><span class="dot" style="background:var(--green)"></span>4. Copy de anúncio <span class="pill" style="background:var(--green)">atrair tráfego</span></div>
+      <div class="card-body grid two">
+        <div style="grid-column:1/-1"><label class="field-title" for="ad_texto">Texto principal do anúncio</label><textarea id="ad_texto" data-save class="long" placeholder="Texto do anúncio: promessa, dor/desejo, benefício, prova e chamada."></textarea></div>
+        <div><label class="field-title" for="ad_titulo">Título curto</label><textarea id="ad_titulo" data-save class="medium" placeholder="Linha curta para chamar atenção"></textarea></div>
+        <div><label class="field-title" for="ad_cta">CTA do anúncio</label><textarea id="ad_cta" data-save class="medium" placeholder="Saiba mais, inscreva-se, agende, baixe..."></textarea></div>
+      </div>
+    </section>
+
+    <section class="card section page-break">
+      <div class="card-head"><span class="dot" style="background:var(--red)"></span>5. Sequência de e-mails <span class="pill" style="background:var(--red); color:#fff">continuar a conversa</span></div>
+      <div class="card-body grid two">
+        <div>
+          <label class="field-title" for="email1_assunto">E-mail 1 — assunto</label><input id="email1_assunto" data-save placeholder="Assunto do e-mail 1" />
+          <label class="field-title" for="email1_corpo" style="margin-top:10px;">E-mail 1 — corpo / ideia principal / CTA</label>
+          <textarea id="email1_corpo" data-save class="long" placeholder="Desenvolva o e-mail 1 com ideia principal, entrega de valor e CTA."></textarea>
+        </div>
+        <div>
+          <label class="field-title" for="email2_assunto">E-mail 2 — assunto</label><input id="email2_assunto" data-save placeholder="Assunto do e-mail 2" />
+          <label class="field-title" for="email2_corpo" style="margin-top:10px;">E-mail 2 — corpo / ideia principal / CTA</label>
+          <textarea id="email2_corpo" data-save class="long" placeholder="Desenvolva o e-mail 2 com aprofundamento, objeção, prova ou convite."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="card section page-break">
+      <div class="card-head"><span class="dot"></span>6. Justificativa de coerência <span class="pill">fechar o raciocínio</span></div>
+      <div class="card-body grid two">
+        <div>
+          <label class="field-title" for="coerencia">Como as peças conversam entre si?</label>
+          <textarea id="coerencia" data-save class="long" placeholder="Explique como Reels, página/artigo, anúncio e e-mails mantêm o mesmo tema, objetivo, nível de consciência e CTA."></textarea>
+        </div>
+        <div>
+          <label class="field-title">Checklist final obrigatório</label>
+          <div class="checklist">
+            <label class="check-item"><input type="checkbox" id="check1" data-save-check><span>Público-alvo e objetivo da campanha estão claros.</span></label>
+            <label class="check-item"><input type="checkbox" id="check2" data-save-check><span>O nível dominante de consciência foi definido e respeitado nas peças.</span></label>
+            <label class="check-item"><input type="checkbox" id="check3" data-save-check><span>O Reels tem gancho inicial forte, desenvolvimento e CTA.</span></label>
+            <label class="check-item"><input type="checkbox" id="check4" data-save-check><span>A página/artigo/landing aprofunda a mesma promessa da campanha.</span></label>
+            <label class="check-item"><input type="checkbox" id="check5" data-save-check><span>A copy do anúncio tem promessa, benefício e CTA compatíveis com o objetivo.</span></label>
+            <label class="check-item"><input type="checkbox" id="check6" data-save-check><span>Os e-mails continuam a conversa e não parecem peças desconectadas.</span></label>
+            <label class="check-item"><input type="checkbox" id="check7" data-save-check><span>Todas as peças usam uma ideia central comum.</span></label>
+            <label class="check-item"><input type="checkbox" id="check8" data-save-check><span>A campanha tem CTA principal coerente do começo ao fim.</span></label>
+          </div>
+          <p class="mini">Marque apenas os itens que foram conferidos pelo grupo.</p>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer-note">Framework criado para atividade de Mídias Sociais • Mini ecossistema de conteúdo • Salve no navegador e exporte em PDF antes de trocar de dispositivo.</p>
+  </div>
+
+  <script>
+    const KEY = 'framework-mini-ecossistema-conteudo-v3-print-safe';
+    function fields(){ return Array.from(document.querySelectorAll('[data-save]')); }
+    function checks(){ return Array.from(document.querySelectorAll('[data-save-check]')); }
+    function textareas(){ return Array.from(document.querySelectorAll('textarea')); }
+    function collect(){
+      const data = {};
+      fields().forEach(el => data[el.id] = el.value);
+      checks().forEach(el => data[el.id] = el.checked);
+      return data;
+    }
+    function autoResize(el){
+      if(el.tagName !== 'TEXTAREA') return;
+      el.style.height = 'auto';
+      const min = parseInt(getComputedStyle(el).minHeight) || 100;
+      el.style.height = Math.max(min, el.scrollHeight + 6) + 'px';
+    }
+    function resizeAll(){ textareas().forEach(autoResize); }
+    function preparePrint(){ resizeAll(); saveData(false); flash('Campos expandidos para PDF/impressão.'); }
+    window.addEventListener('beforeprint', preparePrint);
+    function saveData(show=true){ localStorage.setItem(KEY, JSON.stringify(collect())); if(show) flash('Salvo neste navegador.'); }
+    function loadData(){
+      try{
+        const raw = localStorage.getItem(KEY);
+        if(!raw) return;
+        const data = JSON.parse(raw);
+        fields().forEach(el => { if(data[el.id] !== undefined) el.value = data[el.id]; });
+        checks().forEach(el => { if(data[el.id] !== undefined) el.checked = !!data[el.id]; });
+        resizeAll();
+      }catch(e){}
+    }
+    function clearData(){
+      if(confirm('Tem certeza que deseja limpar todos os campos?')){
+        fields().forEach(el => el.value = '');
+        checks().forEach(el => el.checked = false);
+        localStorage.removeItem(KEY);
+        resizeAll();
+      }
+    }
+    let timer;
+    function flash(msg){
+      clearTimeout(timer);
+      let el = document.getElementById('flash');
+      if(!el){
+        el = document.createElement('div'); el.id = 'flash';
+        el.style.position = 'fixed'; el.style.bottom = '18px'; el.style.right = '18px'; el.style.background = '#22d3ee'; el.style.color = '#07111e';
+        el.style.padding = '10px 14px'; el.style.borderRadius = '12px'; el.style.fontWeight = '900'; el.style.boxShadow = '0 12px 30px rgba(0,0,0,.25)';
+        document.body.appendChild(el);
+      }
+      el.textContent = msg; el.style.display = 'block'; timer = setTimeout(() => el.style.display = 'none', 1800);
+    }
+    fields().forEach(el => el.addEventListener('input', () => { if(el.tagName === 'TEXTAREA') autoResize(el); localStorage.setItem(KEY, JSON.stringify(collect())); }));
+    checks().forEach(el => el.addEventListener('change', () => { localStorage.setItem(KEY, JSON.stringify(collect())); }));
+    loadData();
+    resizeAll();
+  </script>
+</body>
+</html>
